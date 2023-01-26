@@ -2,19 +2,10 @@ import * as State from "./state.js";
 import * as C from "./control.js";
 import Machine from "./machine.js";
 
-const push = x =>
-      State.get.bind(({e, s, k}) =>
-          State.put(new Machine(e, s, [x, ...k])));
-const pop =
-      State.get.bind(({e, s, k: [x, ...k]}) =>
-          State.put(new Machine(e, s, k))
-              .step(State.pure(x)));
-
-const save = State.get.bind(m => push(m.e));
-const restore =
-      pop.bind(e =>
-          State.get.bind(({s, k}) =>
-              State.put(new Machine(e, s, k))));
+const save = State.modify(Machine.save);
+const restore = State.modify(Machine.restore);
+const set = (name, x) => State.modify(Machine.set(name, x));
+const get = name => State.get.map(Machine.get(name));
 
 const local = c =>
       save
@@ -23,33 +14,25 @@ const local = c =>
           restore
               .step(State.pure(x)));
 
-const set = (name, x) =>
-      State.get.bind(({e, s, k}) =>
-          State.put(new Machine({ ...e, [name]: x }, s, k)));
-const get = name => State.get.map(m => m.e[name]);
+const apply = (modify, next) =>
+      local(local(modify).apply(next));
 
 const lt = (name, value, rest) =>
-      local(value)
-      .bind(x =>
-          local(set(name, x)
-                .step(rest)));
-
-const apply = (modify, next) =>
-      local(modify).bind(f =>
-          local(next).bind(x =>
-              State.pure(f(x))));
+      local(local(value)
+            .bind(x => set(name, x))
+            .step(rest));
 
 const elm_nil = tag => State.pure(C.elm(tag)([]));
 const elm_app = (t, h) =>
-      local(t).bind(tv =>
-          local(h).bind(hv =>
-              State.pure(C.elm(tv.tag)([...tv.children, hv]))));
+      local(State.pure(tv => hv => C.elm(tv.tag)([...tv.children, hv]))
+            .apply(local(t))
+            .apply(h));
 
 const frg_nil = State.pure(C.frg([]));
 const frg_app = (t, h) =>
-      local(t).bind(tv =>
-          local(h).bind(hv =>
-              State.pure(C.frg([...tv.children, hv]))));
+      local(State.pure(tv => hv => C.frg([...tv.children, hv]))
+            .apply(local(t))
+            .apply(h));
 
 const elmof = (tag, children) => {
     let result = elm_nil(tag);

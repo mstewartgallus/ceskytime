@@ -15,6 +15,20 @@ function map(x, f) {
     }
 }
 
+function apply(f, x) {
+    switch (true) {
+    case (f instanceof Free.Pure):
+        return map(x, f.value);
+    case (f instanceof Free.Bind): {
+        const { op, next } = f;
+        return new Free.Bind(op, v =>
+            apply(next(v), x));
+    }
+    default:
+        throw new Error(`Unknown free monad type ${x}`);
+    }
+}
+
 function bind(x, f) {
     switch (true) {
     case (x instanceof Free.Pure):
@@ -64,8 +78,19 @@ export function flatten(node) {
         return map(flatten(x), f);
     }
 
+    case (node instanceof State.Apply): {
+        const { x, f } = node;
+        return apply(flatten(f), flatten(x));
+    }
+
     case (node instanceof State.Get):
         return Free.get;
+
+    case (node instanceof State.Modify):
+        return Free.modify(node.f);
+
+    case (node instanceof State.Fragment):
+        return Free.fragment(node.f);
 
     case (node instanceof State.Put):
         return Free.put(node.s);

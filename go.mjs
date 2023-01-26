@@ -1,5 +1,9 @@
 import * as C from "./control.js";
 import Machine from "./machine.js";
+import Heap from "./heap.js";
+import Stack from "./stack.js";
+import Env from "./env.js";
+import * as M from "./machine.js";
 import compile from "./compile.js";
 import flatten from "./flatten.js";
 import emit from "./emit.js";
@@ -14,11 +18,11 @@ const heading = h1([
                  C.vr("y").map(x => C.txt("world " + x)))
 ]);
 
-const e = {
+const e = Env.create(Object.entries({
     x: "Molo",
-};
-const s = {};
-const k = [];
+}));
+const s = Heap.create([]);
+const k = Stack.create([]);
 
 console.log(heading);
 

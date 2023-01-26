@@ -17,6 +17,24 @@ export class Put extends Instr {
         this.next = next;
     }
 }
+export class Modify extends Instr {
+    f;
+    next;
+    constructor(f, next) {
+        super();
+        this.f = f;
+        this.next = next;
+    }
+}
+export class Fragment extends Instr {
+    f;
+    next;
+    constructor(f, next) {
+        super();
+        this.f = f;
+        this.next = next;
+    }
+}
 export class Halt extends Instr {
     value;
     constructor(value) {

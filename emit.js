@@ -11,8 +11,14 @@ export const emit = t => {
 
         case (op instanceof Free.PutOp): {
             const c = emit(next(null));
-            const newS = op.s;
-            return new Instr.Put(newS, c);
+            return new Instr.Put(op.s, c);
+        }
+        case (op instanceof Free.ModifyOp): {
+            const c = emit(next(null));
+            return new Instr.Modify(op.f, c);
+        }
+        case (op instanceof Free.FragmentOp): {
+            return new Instr.Fragment(op.f, s => emit(next(s)));
         }
         default:
             throw new Error(`Unknown op ${op}`);

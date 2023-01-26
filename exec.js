@@ -3,7 +3,7 @@ import * as Kont from "./kont.js";
 export const exec = (c, s) => {
     for (;;) {
         console.log(c);
-        console.log(s);
+        console.log(s.toString());
         const k = c(s);
         if (k instanceof Kont.Halt) {
             return {v:k.value, s};

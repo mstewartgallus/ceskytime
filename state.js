@@ -1,3 +1,12 @@
+export class Pair {
+    state;
+    value;
+    constructor(state, value) {
+        this.state = state;
+        this.value = value;
+    }
+};
+
 export class State {
     bind(f) {
         return new Bind(this, f);
@@ -38,6 +47,17 @@ export class Map extends State {
     }
 }
 
+export class Apply extends State {
+    f;
+    x;
+
+    constructor(f, x) {
+        super();
+        this.f = f;
+        this.x = x;
+    }
+}
+
 export class Step extends State {
     x;
     y;
@@ -70,5 +90,23 @@ export class Put extends State {
 export class Get extends State {
 }
 
+export class Modify extends State {
+    f;
+    constructor(f) {
+        super();
+        this.f = f;
+    }
+}
+
+export class Fragment extends State {
+    f;
+    constructor(f) {
+        super();
+        this.f = f;
+    }
+}
+
 export const get = new Get();
 export const put = s => new Put(s);
+export const modify = f => new Modify(f);
+export const fragment = f => new Fragment(f);
