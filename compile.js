@@ -107,3 +107,5 @@ export function compile(node) {
         throw new Error(`Unknown node type ${node}`);
     }
 }
+
+export default compile;

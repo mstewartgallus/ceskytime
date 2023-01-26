@@ -1,12 +1,16 @@
-import * as CESK from "./cesk.js";
-import Pair from "./pair.js";
+import * as Kont from "./kont.js";
 
 export const exec = (c, s) => {
-    while (c instanceof CESK.Step) {
+    for (;;) {
+        console.log(c);
         console.log(s);
-        const pair = (c.step)(s);
-        c = pair.fst;
-        s = pair.snd;
+        const k = c(s);
+        if (k instanceof Kont.Halt) {
+            return {v:k.value, s};
+        }
+        c = k.next;
+        s = k.state;
     }
-    return {v:c.value, s};
 }
+
+export default exec;

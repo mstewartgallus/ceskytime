@@ -1,32 +1,55 @@
-import * as CESK from "./cesk.js";
-
-export class Free {
+export class State {
     bind(f) {
-        return bind(this, f);
+        return new Bind(this, f);
     }
+
     step(y) {
-        return bind(this, () => y);
+        return new Step(this, y);
     }
+
     apply(x) {
-        return this.bind(fv => x.bind(xv => pure(fv(xv))));
+        return new Apply(this, x);
     }
 
     map(f) {
-        return bind(this, x => pure(f(x)));
+        return new Map(this, f);
     }
 }
 
-export class Bind extends Free {
-    op;
-    next;
+export class Bind extends State {
+    x;
+    f;
 
-    constructor(op, next) {
+    constructor(x, f) {
         super();
-        this.op = op;
-        this.next = next;
+        this.x = x;
+        this.f = f;
     }
 }
-export class Pure extends Free {
+
+export class Map extends State {
+    x;
+    f;
+
+    constructor(x, f) {
+        super();
+        this.x = x;
+        this.f = f;
+    }
+}
+
+export class Step extends State {
+    x;
+    y;
+
+    constructor(x, y) {
+        super();
+        this.x = x;
+        this.y = y;
+    }
+}
+
+export class Pure extends State {
     value;
 
     constructor(value) {
@@ -37,33 +60,15 @@ export class Pure extends Free {
 
 export const pure = v => new Pure(v);
 
-function bind(x, f) {
-    switch (true) {
-    case (x instanceof Pure):
-        return f(x.value);
-    case (x instanceof Bind): {
-        const { op, next } = x;
-        return new Bind(op, xv =>
-            bind(next(xv), f));
-    }
-    default:
-        throw new Error(`Unknown free monad type ${x}`);
-    }
-}
-
-export class Op {
-};
-export class PutOp extends Op {
+export class Put extends State {
     s;
     constructor(s) {
         super();
         this.s = s;
     }
 }
-export class GetOp extends Op {
+export class Get extends State {
 }
 
-const prim = op => new Bind(op, pure);
-
-export const get = prim(new GetOp());
-export const put = s => prim(new PutOp(s));
+export const get = new Get();
+export const put = s => new Put(s);

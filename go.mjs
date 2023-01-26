@@ -1,9 +1,10 @@
-import * as CESK from "./cesk.js";
 import * as C from "./control.js";
 import Machine from "./machine.js";
-import { compile } from "./compile.js";
-import { emit } from "./emit.js";
-import { exec } from "./exec.js";
+import compile from "./compile.js";
+import flatten from "./flatten.js";
+import emit from "./emit.js";
+import jit from "./jit.js";
+import exec from "./exec.js";
 
 const h1 = C.elm("h1");
 
@@ -25,10 +26,18 @@ const code = compile(heading);
 
 console.log(code);
 
-const bit = emit(code);
+const state = flatten(code);
+
+console.log(state);
+
+const bit = emit(state);
 
 console.log(bit);
 
-const result = exec(bit, new Machine(e, s, k));
+const j = jit(bit);
+
+console.log(j);
+
+const result = exec(j, new Machine(e, s, k));
 
 console.log(result.v);
