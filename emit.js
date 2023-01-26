@@ -1,23 +1,23 @@
-import * as Free from "./free.js";
+import * as State from "./state.js";
 import * as Instr from "./instr.js";
 
 export const emit = t => {
     switch (true) {
-    case (t instanceof Free.Bind): {
+    case (t instanceof State.Bind): {
         const { op, next } = t;
         switch (true) {
-        case (op instanceof Free.GetOp):
+        case (op instanceof State.GetOp):
             return new Instr.Get(s => emit(next(s)));
 
-        case (op instanceof Free.PutOp): {
+        case (op instanceof State.PutOp): {
             const c = emit(next(null));
             return new Instr.Put(op.s, c);
         }
-        case (op instanceof Free.ModifyOp): {
+        case (op instanceof State.ModifyOp): {
             const c = emit(next(null));
             return new Instr.Modify(op.f, c);
         }
-        case (op instanceof Free.FragmentOp): {
+        case (op instanceof State.FragmentOp): {
             return new Instr.Fragment(op.f, s => emit(next(s)));
         }
         default:
@@ -25,7 +25,7 @@ export const emit = t => {
         }
     }
 
-    case (t instanceof Free.Pure): {
+    case (t instanceof State.Pure): {
         const { value } = t;
         return new Instr.Halt(value);
     }

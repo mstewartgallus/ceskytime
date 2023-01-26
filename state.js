@@ -1,74 +1,16 @@
-export class Pair {
-    state;
-    value;
-    constructor(state, value) {
-        this.state = state;
-        this.value = value;
-    }
-};
-
 export class State {
-    bind(f) {
-        return new Bind(this, f);
-    }
-
-    step(y) {
-        return new Step(this, y);
-    }
-
-    apply(x) {
-        return new Apply(this, x);
-    }
-
-    map(f) {
-        return new Map(this, f);
-    }
 }
 
 export class Bind extends State {
-    x;
-    f;
+    op;
+    next;
 
-    constructor(x, f) {
+    constructor(op, next) {
         super();
-        this.x = x;
-        this.f = f;
+        this.op = op;
+        this.next = next;
     }
 }
-
-export class Map extends State {
-    x;
-    f;
-
-    constructor(x, f) {
-        super();
-        this.x = x;
-        this.f = f;
-    }
-}
-
-export class Apply extends State {
-    f;
-    x;
-
-    constructor(f, x) {
-        super();
-        this.f = f;
-        this.x = x;
-    }
-}
-
-export class Step extends State {
-    x;
-    y;
-
-    constructor(x, y) {
-        super();
-        this.x = x;
-        this.y = y;
-    }
-}
-
 export class Pure extends State {
     value;
 
@@ -78,35 +20,36 @@ export class Pure extends State {
     }
 }
 
-export const pure = v => new Pure(v);
-
-export class Put extends State {
+export class Op {
+};
+export class FragmentOp extends Op {
+    f;
+    constructor(f) {
+        super();
+        this.f = f;
+    }
+}
+export class ModifyOp extends Op {
+    f;
+    constructor(f) {
+        super();
+        this.f = f;
+    }
+}
+export class PutOp extends Op {
     s;
     constructor(s) {
         super();
         this.s = s;
     }
 }
-export class Get extends State {
+export class GetOp extends Op {
 }
 
-export class Modify extends State {
-    f;
-    constructor(f) {
-        super();
-        this.f = f;
-    }
-}
+const pure = x => new Pure(x);
+const prim = op => new Bind(op, pure);
 
-export class Fragment extends State {
-    f;
-    constructor(f) {
-        super();
-        this.f = f;
-    }
-}
-
-export const get = new Get();
-export const put = s => new Put(s);
-export const modify = f => new Modify(f);
-export const fragment = f => new Fragment(f);
+export const get = prim(new GetOp());
+export const put = s => prim(new PutOp(s));
+export const modify = f => prim(new ModifyOp(f));
+export const fragment = f => prim(new FragmentOp(f));

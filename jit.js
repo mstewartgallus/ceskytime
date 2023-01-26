@@ -1,6 +1,5 @@
 import * as Kont from "./kont.js";
 import * as Instr from "./instr.js";
-import * as State from "./state.js";
 
 // Not really jitting. Knitting together closures but eh
 

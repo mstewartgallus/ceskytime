@@ -1,18 +1,17 @@
-import * as State from "./state.js";
+import * as Program from "./program.js";
 import * as C from "./control.js";
 import Machine from "./machine.js";
 
-const save = State.modify(Machine.save);
-const restore = State.modify(Machine.restore);
-const set = (name, x) => State.modify(Machine.set(name, x));
-const get = name => State.get.map(Machine.get(name));
+const save = Program.modify(Machine.save);
+const restore = Program.modify(Machine.restore);
+const set = (name, x) => Program.modify(Machine.set(name, x));
+const get = name => Program.get.map(Machine.get(name));
 
 const local = c =>
-      save
-      .step(c)
-      .bind(x =>
-          restore
-              .step(State.pure(x)));
+      Program.pure(_ => cv => _ => cv)
+      .apply(save)
+      .apply(c)
+      .apply(restore);
 
 const apply = (modify, next) =>
       local(local(modify).apply(next));
@@ -22,15 +21,15 @@ const lt = (name, value, rest) =>
             .bind(x => set(name, x))
             .step(rest));
 
-const elm_nil = tag => State.pure(C.elm(tag)([]));
+const elm_nil = tag => Program.pure(C.elm(tag)([]));
 const elm_app = (t, h) =>
-      local(State.pure(tv => hv => C.elm(tv.tag)([...tv.children, hv]))
+      local(Program.pure(tv => hv => C.elm(tv.tag)([...tv.children, hv]))
             .apply(local(t))
             .apply(h));
 
-const frg_nil = State.pure(C.frg([]));
+const frg_nil = Program.pure(C.frg([]));
 const frg_app = (t, h) =>
-      local(State.pure(tv => hv => C.frg([...tv.children, hv]))
+      local(Program.pure(tv => hv => C.frg([...tv.children, hv]))
             .apply(local(t))
             .apply(h));
 
@@ -54,7 +53,7 @@ export function compile(node) {
     switch (true) {
     case (node instanceof C.Pure): {
         const { value } = node;
-        return State.pure(value);
+        return Program.pure(value);
     }
 
     case (node instanceof C.Apply): {
@@ -64,7 +63,7 @@ export function compile(node) {
 
     case (node instanceof C.TextNode): {
         const { text } = node;
-        return State.pure(C.txt(text));
+        return Program.pure(C.txt(text));
     }
 
     case (node instanceof C.ElementNode): {
